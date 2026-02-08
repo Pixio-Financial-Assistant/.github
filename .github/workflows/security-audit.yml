@@ -1,0 +1,83 @@
+name: Security Audit (Reusable)
+
+on:
+  workflow_call:
+    inputs:
+      audit-level:
+        description: 'Minimum severity to fail: low, moderate, high, critical'
+        type: string
+        default: 'high'
+      package-manager:
+        description: 'Package manager: pnpm or npm'
+        type: string
+        default: 'pnpm'
+      node-version:
+        description: 'Node.js version'
+        type: string
+        default: '20'
+      pnpm-version:
+        description: 'pnpm version (ignored if npm)'
+        type: string
+        default: '10'
+      gitleaks-enabled:
+        description: 'Run gitleaks secret scanning'
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  dependency-audit:
+    name: Dependency Audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        if: inputs.package-manager == 'pnpm'
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ inputs.pnpm-version }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node-version }}
+          cache: ${{ inputs.package-manager }}
+
+      - name: Install dependencies
+        run: |
+          if [ "${{ inputs.package-manager }}" = "pnpm" ]; then
+            pnpm install --frozen-lockfile
+          else
+            npm ci
+          fi
+
+      - name: Dependency Audit
+        run: |
+          if [ "${{ inputs.package-manager }}" = "pnpm" ]; then
+            pnpm audit --audit-level ${{ inputs.audit-level }}
+          else
+            npm audit --audit-level=${{ inputs.audit-level }}
+          fi
+
+  secret-scanning:
+    name: Secret Scanning (Gitleaks)
+    if: inputs.gitleaks-enabled
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ github.token }}

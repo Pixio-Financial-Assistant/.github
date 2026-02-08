@@ -1,0 +1,81 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": "Pixio org-wide Renovate preset. All repos extend this.",
+  "extends": [
+    "config:recommended",
+    "group:allNonMajor",
+    ":pinAllExceptPeerDependencies"
+  ],
+  "labels": ["dependencies"],
+  "schedule": ["before 9am on monday"],
+  "timezone": "America/Sao_Paulo",
+  "prHourlyLimit": 3,
+  "prConcurrentLimit": 5,
+  "packageRules": [
+    {
+      "description": "Next.js + @next/* always update together",
+      "matchPackagePatterns": ["^next$", "^@next/"],
+      "groupName": "Next.js",
+      "groupSlug": "nextjs"
+    },
+    {
+      "description": "React ecosystem updates together",
+      "matchPackagePatterns": ["^react", "^@types/react"],
+      "groupName": "React",
+      "groupSlug": "react"
+    },
+    {
+      "description": "AI SDK updates together",
+      "matchPackagePatterns": ["^@ai-sdk/", "^ai$"],
+      "groupName": "AI SDK",
+      "groupSlug": "ai-sdk"
+    },
+    {
+      "description": "Prisma updates together",
+      "matchPackagePatterns": ["^@prisma/", "^prisma$"],
+      "groupName": "Prisma",
+      "groupSlug": "prisma"
+    },
+    {
+      "description": "Playwright updates together",
+      "matchPackagePatterns": ["^@playwright/", "^playwright$"],
+      "groupName": "Playwright",
+      "groupSlug": "playwright"
+    },
+    {
+      "description": "XYFlow/ReactFlow updates together",
+      "matchPackagePatterns": ["^@xyflow/"],
+      "groupName": "XYFlow",
+      "groupSlug": "xyflow"
+    },
+    {
+      "description": "Expo SDK updates together",
+      "matchPackagePatterns": ["^expo", "^@expo/"],
+      "groupName": "Expo",
+      "groupSlug": "expo"
+    },
+    {
+      "description": "Block dangerous Tailwind v4 (CSS leak issue)",
+      "matchPackageNames": ["tailwindcss"],
+      "allowedVersions": "<4.0.0",
+      "enabled": true
+    },
+    {
+      "description": "Block dangerous Next.js 16 (unstable)",
+      "matchPackageNames": ["next"],
+      "allowedVersions": "<16.0.0",
+      "enabled": true
+    },
+    {
+      "description": "Auto-merge patch updates (security patches)",
+      "matchUpdateTypes": ["patch"],
+      "automerge": true,
+      "automergeType": "pr",
+      "platformAutomerge": true
+    }
+  ],
+  "vulnerabilityAlerts": {
+    "enabled": true,
+    "labels": ["security"]
+  }
+}
